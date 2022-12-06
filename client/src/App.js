@@ -5,7 +5,7 @@ import { Button, Input } from 'reactstrap'
 import './App.css'
 import { useListeningLocalStorage } from './hooks/useLocalStorage'
 
-const client = new W3CWebSocket('ws://localhost:8000', 'echo-protocol')
+const client = new W3CWebSocket(process.env.REACT_APP_WS_HOST, 'echo-protocol')
 
 const  App = () => {
   const [search, setSearch] = useState('')
