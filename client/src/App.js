@@ -92,12 +92,12 @@ const  App = () => {
         <Button className='m-1' onClick={stopHandler}>Stop</Button>
       </section>
 
-      <sections>
+      <section>
         <h1>Server information:</h1>
         { serverData !== null &&
           <div>{JSON.stringify(serverData)}</div>
         }
-      </sections>
+      </section>
 
     </div>
   )
