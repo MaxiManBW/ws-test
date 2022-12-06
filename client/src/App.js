@@ -101,7 +101,7 @@ const  App = () => {
   return (
     <div className="App">
       <section>
-        <Input innerRef={inputRef} className='m-1' onChange={inputHandler} value={search}/>
+        <Input innerRef={inputRef} className='m-1' onChange={inputHandler} value={search || ''}/>
         <Button className='m-1' onClick={runHandler}>Run</Button>
         <Button className='m-1' onClick={stopHandler}>Stop</Button>
       </section>
