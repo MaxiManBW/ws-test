@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { w3cwebsocket as W3CWebSocket } from 'websocket'
 import { Button, Input } from 'reactstrap'
 
@@ -8,6 +8,7 @@ import { useListeningLocalStorage } from './hooks/useLocalStorage'
 const client = new W3CWebSocket(process.env.REACT_APP_WS_HOST, 'echo-protocol')
 
 const  App = () => {
+  const inputRef = useRef(null)
   const [search, setSearch] = useState('')
   const [serverData, setServerData] = useState(null)
   // const [serverData] = useListeningLocalStorage(['search', 'timestamp', 'isExist' ])
@@ -29,7 +30,11 @@ const  App = () => {
     client.send(JSON.stringify({ isStop: true, uuid }))
   }
 
-  const inputHandler = (e) => setSearch(e.target.value)
+  const inputHandler = (e) => {
+    const search = e.target.value
+    setSearch(search)
+    if (search === '') localStorage.setItem('search', search)
+  }
 
   client.onerror = function() {
     console.log('Connection Error')
@@ -70,7 +75,9 @@ const  App = () => {
   
   useEffect(() => {
     console.log({ search })
-    if (search === '') setServerData(null)
+    if (search === '') {
+      setServerData(null)
+    }
     else {
       client.send(JSON.stringify({ search }))
     }
@@ -80,11 +87,21 @@ const  App = () => {
     console.log({ serverData })
   }, [serverData])
   
+  useEffect(() => {
+    const localSearch = localStorage.getItem('search')
+    if (localSearch !== undefined) {
+      setSearch(localSearch)
+    }
+
+    if (inputRef.current) {
+      inputRef.current.focus()
+    }
+  }, [])
 
   return (
     <div className="App">
       <section>
-        <Input className='m-1' onChange={inputHandler}/>
+        <Input innerRef={inputRef} className='m-1' onChange={inputHandler} value={search}/>
         <Button className='m-1' onClick={runHandler}>Run</Button>
         <Button className='m-1' onClick={stopHandler}>Stop</Button>
       </section>
