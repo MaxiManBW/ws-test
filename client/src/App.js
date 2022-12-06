@@ -21,6 +21,7 @@ const  App = () => {
     console.log('Run Clicked')
     const newServerData = { ...serverData }
     const uuid = localStorage.getItem('uuid')
+    removeItemsLocalStorage(['uuid', 'timestamp'])
     delete newServerData.timestamp
     delete newServerData.uuid
     setServerData(Object.keys(newServerData).length === 0 ? null : newServerData)
@@ -67,16 +68,12 @@ const  App = () => {
     console.log('echo-protocol Client Closed')
   }
   
-  
-
   useEffect(() => {
     console.log({ search })
     if (search === '') setServerData(null)
     else {
       client.send(JSON.stringify({ search }))
     }
-
-    return () => localStorage.clear()
   }, [search])
 
   useEffect(() => {
@@ -103,4 +100,19 @@ const  App = () => {
   )
 }
 
+window.onbeforeunload = () => {
+  console.log('onbeforeunload');
+  // localStorage.clear()
+}
+
+window.onunload = () => {
+  console.log('onunload');
+}
+
 export default App
+
+function removeItemsLocalStorage(items) {
+  items.forEach(item => {
+    localStorage.removeItem(item)
+  })
+}
