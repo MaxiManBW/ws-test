@@ -1,5 +1,9 @@
 import http from 'node:http'
+import { randomUUID } from 'node:crypto'
+
 import { WebSocketServer } from 'ws'
+
+const connections = new Map()
 
 const DICTIONARY = [
   'i',
@@ -14,11 +18,8 @@ const DICTIONARY = [
   'site',
 ]
 
-let intervalId = null
-
 const routing = {
   '/': { message: 'Server works fine'},
-  '/ws': { message: 'Hello from WS'},
 }
 const server = http.createServer((req, res) => {
   const data = routing[req.url]
@@ -42,13 +43,29 @@ ws.on('connection', (socket, req) => {
 
   socket.on('message', (message) => {
     const data = JSON.parse(message)
+
     if (data.isRun) {
-      intervalId = runSendingMessages()
+      const uuid = getUuid()
+      connections.set(uuid, runSendingMessages())
+      socket.send(JSON.stringify({ uuid }))
     }
 
-    if (data.isStop && intervalId) {
-      clearInterval(intervalId)
-      intervalId = null
+    if (data.isReconnect) {
+      const uuid = data.uuid
+      if (connections.has(uuid)) {
+        clearInterval(connections.get(uuid))
+        connections.set(uuid, runSendingMessages())
+        socket.send(JSON.stringify({ uuid }))
+      }
+      // clearInterval(intervalId)
+      // intervalId = null
+    }
+
+    if (data.isStop) {
+      const uuid = data.uuid
+      clearInterval(connections.get(uuid))
+      connections.delete(uuid)
+      console.log({ connections })
     }
 
     if (data.search) {
@@ -69,10 +86,12 @@ ws.on('connection', (socket, req) => {
   function runSendingMessages() {
     const intervalId = setInterval(() => {
       const data = JSON.stringify({ timestamp: new Date().getTime()})
-      console.log({ data });
-      socket.send(data) 
-    }, 2000)
+      socket.send(data)
+    }, 1000)
     return intervalId
   }
-
 })
+
+function getUuid() {
+  return randomUUID()
+}

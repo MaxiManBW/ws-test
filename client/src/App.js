@@ -20,10 +20,12 @@ const  App = () => {
   const stopHandler = () => {
     console.log('Run Clicked')
     const newServerData = { ...serverData }
+    const uuid = localStorage.getItem('uuid')
     delete newServerData.timestamp
+    delete newServerData.uuid
     setServerData(Object.keys(newServerData).length === 0 ? null : newServerData)
 
-    client.send(JSON.stringify({ isStop: true }))
+    client.send(JSON.stringify({ isStop: true, uuid }))
   }
 
   const inputHandler = (e) => setSearch(e.target.value)
@@ -31,21 +33,17 @@ const  App = () => {
   client.onerror = function() {
     console.log('Connection Error')
   }
-  
-  client.onopen = function() {
-    console.log('WebSocket Client Connected')
-  }
-  
-  client.onclose = function() {
-    console.log('echo-protocol Client Closed')
-  }
-  
+
   client.onmessage = function(e) {
     if (typeof e.data === 'string') {
         console.log("Received from the Server: '" + e.data + "'")
     }
     const data = JSON.parse(e.data)
-    if (data.hasOwnProperty('timestamp') || data.hasOwnProperty('isExist') || data.hasOwnProperty('search')) {
+    if (data.hasOwnProperty('timestamp')
+      || data.hasOwnProperty('isExist')
+      || data.hasOwnProperty('search')
+      || data.hasOwnProperty('uuid')
+    ) {
       Object.entries(data).forEach(d => {
         localStorage.setItem(d[0], d[1])
         setServerData(prev => ({
@@ -55,6 +53,21 @@ const  App = () => {
     })
     }
   }
+  
+  client.onopen = function() {
+    const uuid = localStorage.getItem('uuid')
+    if (uuid) {
+      client.send(JSON.stringify({ isReconnect: true,  uuid }))
+    }
+
+    console.log('WebSocket Client Connected')
+  }
+  
+  client.onclose = function() {
+    console.log('echo-protocol Client Closed')
+  }
+  
+  
 
   useEffect(() => {
     console.log({ search })
