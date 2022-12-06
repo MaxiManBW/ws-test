@@ -5,6 +5,8 @@ import { Button, Input } from 'reactstrap'
 import './App.css'
 import { useListeningLocalStorage } from './hooks/useLocalStorage'
 
+let isWsConnected = false
+
 const client = new W3CWebSocket(process.env.REACT_APP_WS_HOST, 'echo-protocol')
 
 const  App = () => {
@@ -67,10 +69,12 @@ const  App = () => {
     }
 
     console.log('WebSocket Client Connected')
+    isWsConnected = true
   }
   
   client.onclose = function() {
     console.log('echo-protocol Client Closed')
+    isWsConnected = false
   }
   
   useEffect(() => {
@@ -79,7 +83,7 @@ const  App = () => {
       setServerData(null)
     }
     else {
-      client.send(JSON.stringify({ search }))
+      isWsConnected && client.send(JSON.stringify({ search }))
     }
   }, [search])
 
