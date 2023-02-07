@@ -1,1 +1,1 @@
-Test example to show how I can resolve WebSocket issue
+Test example to show how I can resolve the WebSocket issue.
